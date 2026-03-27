@@ -90,6 +90,10 @@ function genId() {
     : `${Date.now()}-${Math.random().toString(36).slice(2,9)}`
 }
 
+// Supabase query builders are thenables but not full Promises in some versions,
+// so .catch() may not exist. Wrap in Promise.resolve() to normalise.
+function _safe(q) { return Promise.resolve(q).catch(console.error) }
+
 let _user = null
 
 window.DB = {
@@ -121,18 +125,18 @@ window.DB = {
   async addTask(title) {
     const item = { id: genId(), title, completed: false, created_at: new Date().toISOString() }
     _writeArr('tasks', [item, ..._readArr('tasks')])
-    if (_user) await _sb.from('tasks').insert({ ...item, user_id: _user.id }).catch(console.error)
+    if (_user) await _safe(_sb.from('tasks').insert({ ...item, user_id: _user.id }))
     return item
   },
 
   async updateTask(id, changes) {
     _writeArr('tasks', _readArr('tasks').map(t => t.id === id ? { ...t, ...changes } : t))
-    if (_user) await _sb.from('tasks').update(changes).eq('id', id).catch(console.error)
+    if (_user) await _safe(_sb.from('tasks').update(changes).eq('id', id))
   },
 
   async deleteTask(id) {
     _writeArr('tasks', _readArr('tasks').filter(t => t.id !== id))
-    if (_user) await _sb.from('tasks').delete().eq('id', id).catch(console.error)
+    if (_user) await _safe(_sb.from('tasks').delete().eq('id', id))
   },
 
   // ── Claude Ideas ──────────────────────────────────────────────
@@ -141,13 +145,13 @@ window.DB = {
   async addIdea(content) {
     const item = { id: genId(), content, created_at: new Date().toISOString() }
     _writeArr('ideas', [..._readArr('ideas'), item])
-    if (_user) await _sb.from('claude_ideas').insert({ ...item, user_id: _user.id }).catch(console.error)
+    if (_user) await _safe(_sb.from('claude_ideas').insert({ ...item, user_id: _user.id }))
     return item
   },
 
   async deleteIdea(id) {
     _writeArr('ideas', _readArr('ideas').filter(i => i.id !== id))
-    if (_user) await _sb.from('claude_ideas').delete().eq('id', id).catch(console.error)
+    if (_user) await _safe(_sb.from('claude_ideas').delete().eq('id', id))
   },
 
   // ── Learning Path ─────────────────────────────────────────────
@@ -157,7 +161,7 @@ window.DB = {
     const items = _readArr('learning')
     const item = { id: genId(), topic, position: items.length, created_at: new Date().toISOString() }
     _writeArr('learning', [...items, item])
-    if (_user) await _sb.from('learning_path').insert({ ...item, user_id: _user.id }).catch(console.error)
+    if (_user) await _safe(_sb.from('learning_path').insert({ ...item, user_id: _user.id }))
     return item
   },
 
@@ -165,7 +169,7 @@ window.DB = {
     const updated = _readArr('learning').filter(l => l.id !== id).map((l, i) => ({ ...l, position: i }))
     _writeArr('learning', updated)
     if (_user) {
-      await _sb.from('learning_path').delete().eq('id', id).catch(console.error)
+      await _safe(_sb.from('learning_path').delete().eq('id', id))
     }
   },
 
@@ -181,9 +185,9 @@ window.DB = {
     _writeArr('learning', reordered)
 
     if (_user) {
-      await Promise.all(reordered.map(l =>
+      await _safe(Promise.all(reordered.map(l =>
         _sb.from('learning_path').update({ position: l.position }).eq('id', l.id)
-      )).catch(console.error)
+      )))
     }
   },
 
@@ -193,18 +197,18 @@ window.DB = {
   async addProject(data) {
     const item = { id: genId(), ...data, created_at: new Date().toISOString() }
     _writeArr('projects', [..._readArr('projects'), item])
-    if (_user) await _sb.from('projects').insert({ ...item, user_id: _user.id }).catch(console.error)
+    if (_user) await _safe(_sb.from('projects').insert({ ...item, user_id: _user.id }))
     return item
   },
 
   async updateProject(id, changes) {
     _writeArr('projects', _readArr('projects').map(p => p.id === id ? { ...p, ...changes } : p))
-    if (_user) await _sb.from('projects').update(changes).eq('id', id).catch(console.error)
+    if (_user) await _safe(_sb.from('projects').update(changes).eq('id', id))
   },
 
   async deleteProject(id) {
     _writeArr('projects', _readArr('projects').filter(p => p.id !== id))
-    if (_user) await _sb.from('projects').delete().eq('id', id).catch(console.error)
+    if (_user) await _safe(_sb.from('projects').delete().eq('id', id))
   },
 
   // ── Floater State ─────────────────────────────────────────────
@@ -220,9 +224,8 @@ window.DB = {
   async saveFloaterState(state) {
     localStorage.setItem(CK.floater, JSON.stringify(state))
     if (_user) {
-      await _sb.from('floater_state')
-        .upsert({ user_id: _user.id, note: state.text, visible: state.visible, style: state.style, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-        .catch(console.error)
+      await _safe(_sb.from('floater_state')
+        .upsert({ user_id: _user.id, note: state.text, visible: state.visible, style: state.style, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }))
     }
   },
 
