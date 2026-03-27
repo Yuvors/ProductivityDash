@@ -60,10 +60,10 @@ function renderTasks() {
 
   // Events
   list.querySelectorAll('.task-check').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const task = DB.getTasks().find(t => t.id === btn.dataset.id)
       if (!task) return
-      await DB.updateTask(btn.dataset.id, { completed: !task.completed })
+      DB.updateTask(btn.dataset.id, { completed: !task.completed })
       renderTasks()
     })
   })
@@ -72,8 +72,8 @@ function renderTasks() {
     btn.addEventListener('click', () => {
       const li = btn.closest('.task-item')
       li.classList.add('removing')
-      setTimeout(async () => {
-        await DB.deleteTask(btn.dataset.id)
+      setTimeout(() => {
+        DB.deleteTask(btn.dataset.id)
         renderTasks()
       }, 190)
     })
@@ -84,11 +84,11 @@ function setupTaskInput() {
   const input = $('task-input')
   const addBtn = $('task-add-btn')
 
-  async function add() {
+  function add() {
     const val = input.value.trim()
     if (!val) return
     input.value = ''
-    await DB.addTask(val)
+    DB.addTask(val)
     renderTasks()
   }
 
@@ -118,8 +118,8 @@ function renderIdeas() {
     btn.addEventListener('click', () => {
       const li = btn.closest('.idea-item')
       li.classList.add('removing')
-      setTimeout(async () => {
-        await DB.deleteIdea(btn.dataset.id)
+      setTimeout(() => {
+        DB.deleteIdea(btn.dataset.id)
         renderIdeas()
       }, 190)
     })
@@ -145,11 +145,11 @@ function setupIdeaInput() {
     addBtn.textContent = '+'
   }
 
-  async function save() {
+  function save() {
     const val = input.value.trim()
     if (!val) return
     closeInput()
-    await DB.addIdea(val)
+    DB.addIdea(val)
     renderIdeas()
   }
 
@@ -182,15 +182,15 @@ function renderLearning() {
   else empty.style.display = 'none'
 
   list.querySelectorAll('.step-up').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await DB.moveLearningItem(btn.dataset.id, 'up')
+    btn.addEventListener('click', () => {
+      DB.moveLearningItem(btn.dataset.id, 'up')
       renderLearning()
     })
   })
 
   list.querySelectorAll('.step-down').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await DB.moveLearningItem(btn.dataset.id, 'down')
+    btn.addEventListener('click', () => {
+      DB.moveLearningItem(btn.dataset.id, 'down')
       renderLearning()
     })
   })
@@ -199,8 +199,8 @@ function renderLearning() {
     btn.addEventListener('click', () => {
       const li = btn.closest('.learning-item')
       li.classList.add('removing')
-      setTimeout(async () => {
-        await DB.deleteLearningItem(btn.dataset.id)
+      setTimeout(() => {
+        DB.deleteLearningItem(btn.dataset.id)
         renderLearning()
       }, 190)
     })
@@ -226,11 +226,11 @@ function setupLearningInput() {
     addBtn.textContent = '+'
   }
 
-  async function save() {
+  function save() {
     const val = input.value.trim()
     if (!val) return
     closeInput()
-    await DB.addLearningItem(val)
+    DB.addLearningItem(val)
     renderLearning()
   }
 
@@ -271,17 +271,17 @@ function renderProjects() {
     }).join('')
 
     col.querySelectorAll('.proj-left').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const newStatus = STATUS_ORDER[STATUS_ORDER.indexOf(status) - 1]
-        await DB.updateProject(btn.dataset.id, { status: newStatus })
+        DB.updateProject(btn.dataset.id, { status: newStatus })
         renderProjects()
       })
     })
 
     col.querySelectorAll('.proj-right').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const newStatus = STATUS_ORDER[STATUS_ORDER.indexOf(status) + 1]
-        await DB.updateProject(btn.dataset.id, { status: newStatus })
+        DB.updateProject(btn.dataset.id, { status: newStatus })
         renderProjects()
       })
     })
@@ -290,8 +290,8 @@ function renderProjects() {
       btn.addEventListener('click', () => {
         const card = btn.closest('.project-card')
         card.classList.add('removing')
-        setTimeout(async () => {
-          await DB.deleteProject(btn.dataset.id)
+        setTimeout(() => {
+          DB.deleteProject(btn.dataset.id)
           renderProjects()
         }, 190)
       })
@@ -322,11 +322,11 @@ function setupProjectForm() {
     addBtn.textContent = '+ New Project'
   }
 
-  async function save() {
+  function save() {
     const name = nameInput.value.trim()
     if (!name) { nameInput.focus(); return }
     closeForm()
-    await DB.addProject({ name, description: descInput.value.trim(), status: statusSel.value })
+    DB.addProject({ name, description: descInput.value.trim(), status: statusSel.value })
     renderProjects()
   }
 
