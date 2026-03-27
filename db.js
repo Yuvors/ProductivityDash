@@ -62,8 +62,8 @@
    ============================================================ */
 
 // ── Credentials — fill these in ───────────────────────────────
-const SUPABASE_URL  = 'YOUR_SUPABASE_URL'
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'
+const SUPABASE_URL  = 'https://cpohvlxdgyzsjsbyhvdz.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwb2h2bHhkZ3l6c2pzYnlodmR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MDgwOTcsImV4cCI6MjA5MDE4NDA5N30.yRGvzwRCIMNqyvi_uFIPlSoUcC4gv-KGZm-pK3alKC0'
 // ─────────────────────────────────────────────────────────────
 
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
