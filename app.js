@@ -159,87 +159,6 @@ function setupIdeaInput() {
   input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') closeInput() })
 }
 
-// ── Learning Path ────────────────────────────────────────────────
-function renderLearning() {
-  const items = DB.getLearningItems()
-  const list  = $('learning-list')
-  const empty = $('learning-empty')
-
-  const html = items.map((l, idx) => `
-    <li class="learning-item" data-id="${esc(l.id)}">
-      <span class="step-num">${idx + 1}</span>
-      <span class="item-text">${esc(l.topic)}</span>
-      <div class="step-controls">
-        <button class="step-btn step-up" data-id="${esc(l.id)}" title="Move up" ${idx === 0 ? 'disabled' : ''}>▲</button>
-        <button class="step-btn step-down" data-id="${esc(l.id)}" title="Move down" ${idx === items.length - 1 ? 'disabled' : ''}>▼</button>
-      </div>
-      <button class="item-delete" data-id="${esc(l.id)}" aria-label="Delete">×</button>
-    </li>
-  `).join('')
-
-  list.innerHTML = html
-  if (!items.length) list.appendChild(empty)
-  else empty.style.display = 'none'
-
-  list.querySelectorAll('.step-up').forEach(btn => {
-    btn.addEventListener('click', () => {
-      DB.moveLearningItem(btn.dataset.id, 'up')
-      renderLearning()
-    })
-  })
-
-  list.querySelectorAll('.step-down').forEach(btn => {
-    btn.addEventListener('click', () => {
-      DB.moveLearningItem(btn.dataset.id, 'down')
-      renderLearning()
-    })
-  })
-
-  list.querySelectorAll('.item-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const li = btn.closest('.learning-item')
-      li.classList.add('removing')
-      setTimeout(() => {
-        DB.deleteLearningItem(btn.dataset.id)
-        renderLearning()
-      }, 190)
-    })
-  })
-}
-
-function setupLearningInput() {
-  const addBtn    = $('learning-add-btn')
-  const inputRow  = $('learning-input-row')
-  const input     = $('learning-input')
-  const saveBtn   = $('learning-save-btn')
-  const cancelBtn = $('learning-cancel-btn')
-
-  function openInput() {
-    inputRow.classList.remove('hidden')
-    input.focus()
-    addBtn.textContent = '−'
-  }
-
-  function closeInput() {
-    inputRow.classList.add('hidden')
-    input.value = ''
-    addBtn.textContent = '+'
-  }
-
-  function save() {
-    const val = input.value.trim()
-    if (!val) return
-    closeInput()
-    DB.addLearningItem(val)
-    renderLearning()
-  }
-
-  addBtn.addEventListener('click', () => inputRow.classList.contains('hidden') ? openInput() : closeInput())
-  saveBtn.addEventListener('click', save)
-  cancelBtn.addEventListener('click', closeInput)
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') closeInput() })
-}
-
 // ── Projects ─────────────────────────────────────────────────────
 const STATUS_ORDER = ['tostart', 'inprogress', 'completed']
 
@@ -432,10 +351,9 @@ async function showDashboard() {
   // Pull fresh data from Supabase
   await DB.syncAll()
 
-  // Render all sections
+  // Render home page sections
   renderTasks()
   renderIdeas()
-  renderLearning()
   renderProjects()
   renderQuoteCard()
 
@@ -446,7 +364,7 @@ async function showDashboard() {
   DB.subscribeAll({
     onTasksChange:    renderTasks,
     onIdeasChange:    renderIdeas,
-    onLearningChange: renderLearning,
+    onLearningChange: () => window.renderLearningPath?.(),
     onProjectsChange: renderProjects,
   })
 
@@ -455,6 +373,14 @@ async function showDashboard() {
 
   // Date
   updateDate()
+
+  // Page activation handler
+  window._onPageActivate = pageId => {
+    if (pageId === 'learning') window.renderLearningPath?.()
+  }
+
+  // Start router (renders initial page, calls _onPageActivate)
+  Router.init()
 }
 
 function showLogin() {
@@ -467,9 +393,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupLogin()
   setupTaskInput()
   setupIdeaInput()
-  setupLearningInput()
+  setupLearningPageInput()
   setupProjectForm()
   setupQuoteCard()
+  ChatAgent.init()
 
   window.onAuthChange = user => {
     if (user) showDashboard()

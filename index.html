@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- ── Login Modal ─────────────────────────────────────── -->
+  <!-- ── Login Modal ─────────────────────────────────────────── -->
   <div id="login-modal">
     <div class="login-card glass-card">
       <div class="login-logo">
@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <!-- ── Dashboard ───────────────────────────────────────── -->
+  <!-- ── Dashboard ───────────────────────────────────────────── -->
   <div id="dashboard" class="hidden">
 
     <!-- Floating motivational statement -->
@@ -53,43 +53,57 @@
       <button class="floater__close" aria-label="Dismiss">×</button>
     </div>
 
-    <main class="bento-grid">
+    <!-- Navigation bar -->
+    <nav id="app-nav" class="app-nav">
+      <div class="nav-brand">
+        <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="url(#nlg)"/>
+          <path d="M12 20 L18 26 L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="nlg" x1="0" y1="0" x2="40" y2="40">
+              <stop offset="0%" stop-color="#00F5C4"/>
+              <stop offset="100%" stop-color="#0080FF"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="nav-title">My Dashboard</span>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" data-page="home" href="#home">Home</a>
+        <a class="nav-link" data-page="learning" href="#learning">Learning Path</a>
+      </div>
+      <div class="nav-right">
+        <span class="nav-date" id="header-date"></span>
+        <button id="signout-btn" class="btn btn-ghost btn-sm">Sign Out</button>
+      </div>
+    </nav>
 
-      <!-- Header ─────────────────────────────────────────── -->
-      <section id="header-card" class="glass-card reveal">
-        <div class="header-inner">
-          <div>
-            <h1 class="kinetic-title">My Dashboard</h1>
-            <p class="header-date" id="header-date"></p>
+    <!-- ── Page: Home ──────────────────────────────────────────── -->
+    <div class="page" id="page-home">
+      <main class="bento-grid">
+
+        <!-- Tomorrow's Tasks -->
+        <section id="tasks-card" class="glass-card reveal">
+          <div class="card-header">
+            <div class="card-header-left">
+              <h2 class="card-title">Tomorrow's Tasks</h2>
+              <span class="badge badge-accent" id="tasks-badge">0</span>
+            </div>
           </div>
-          <button id="signout-btn" class="btn btn-ghost btn-sm">Sign Out</button>
-        </div>
-      </section>
-
-      <!-- Tomorrow's Tasks ────────────────────────────────── -->
-      <section id="tasks-card" class="glass-card reveal">
-        <div class="card-header">
-          <div class="card-header-left">
-            <h2 class="card-title">Tomorrow's Tasks</h2>
-            <span class="badge badge-accent" id="tasks-badge">0</span>
+          <div class="task-input-row">
+            <input type="text" id="task-input" class="text-input" placeholder="Add a task for tomorrow…" maxlength="200">
+            <button id="task-add-btn" class="btn btn-primary btn-sm">Add</button>
           </div>
-        </div>
-        <div class="task-input-row">
-          <input type="text" id="task-input" class="text-input" placeholder="Add a task for tomorrow…" maxlength="200">
-          <button id="task-add-btn" class="btn btn-primary btn-sm">Add</button>
-        </div>
-        <ul id="tasks-list" class="task-list">
-          <li class="empty-state" id="tasks-empty">
-            <span>Nothing planned yet</span>
-            <small>Add your first task above</small>
-          </li>
-        </ul>
-      </section>
+          <ul id="tasks-list" class="task-list">
+            <li class="empty-state" id="tasks-empty">
+              <span>Nothing planned yet</span>
+              <small>Add your first task above</small>
+            </li>
+          </ul>
+        </section>
 
-      <!-- Claude Ideas + Learning Path ───────────────────── -->
-      <section id="claude-card" class="glass-card reveal">
-        <!-- Ideas panel -->
-        <div class="sub-panel">
+        <!-- Claude Ideas -->
+        <section id="claude-card" class="glass-card reveal">
           <div class="card-header">
             <div class="card-header-left">
               <span class="panel-icon">💡</span>
@@ -108,119 +122,175 @@
               <small>Tap + to add one</small>
             </li>
           </ul>
-        </div>
+        </section>
 
-        <div class="panel-divider"></div>
-
-        <!-- Learning Path panel -->
-        <div class="sub-panel">
+        <!-- Projects Kanban -->
+        <section id="projects-card" class="glass-card reveal">
           <div class="card-header">
             <div class="card-header-left">
-              <span class="panel-icon">🎯</span>
-              <h2 class="card-title">Learning Path</h2>
+              <h2 class="card-title">Projects</h2>
             </div>
-            <button id="learning-add-btn" class="btn btn-ghost btn-icon" title="Add step">+</button>
+            <button id="project-add-btn" class="btn btn-primary btn-sm">+ New Project</button>
           </div>
-          <div id="learning-input-row" class="task-input-row hidden">
-            <input type="text" id="learning-input" class="text-input" placeholder="New learning step…" maxlength="200">
-            <button id="learning-save-btn" class="btn btn-primary btn-sm">Add</button>
-            <button id="learning-cancel-btn" class="btn btn-ghost btn-sm">✕</button>
-          </div>
-          <ol id="learning-list" class="item-list learning-list">
-            <li class="empty-state" id="learning-empty">
-              <span>No steps yet</span>
-              <small>Build your Claude learning path</small>
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- Projects Kanban ─────────────────────────────────── -->
-      <section id="projects-card" class="glass-card reveal">
-        <div class="card-header">
-          <div class="card-header-left">
-            <h2 class="card-title">Projects</h2>
-          </div>
-          <button id="project-add-btn" class="btn btn-primary btn-sm">+ New Project</button>
-        </div>
-
-        <!-- Add project form -->
-        <div id="project-form" class="project-form hidden">
-          <input type="text" id="project-name" class="text-input" placeholder="Project name…" maxlength="100">
-          <input type="text" id="project-desc" class="text-input" placeholder="Short description (optional)…" maxlength="200">
-          <div class="project-form-actions">
-            <select id="project-status-select" class="select-input">
-              <option value="tostart">To Start</option>
-              <option value="inprogress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-            <button id="project-save-btn" class="btn btn-primary btn-sm">Save</button>
-            <button id="project-cancel-btn" class="btn btn-ghost btn-sm">Cancel</button>
-          </div>
-        </div>
-
-        <!-- Kanban columns -->
-        <div class="kanban">
-          <div class="kanban-col kanban-col--tostart" data-status="tostart">
-            <div class="kanban-col-header">
-              <span class="kanban-col-title">To Start</span>
-              <span class="badge badge-cyan" id="tostart-badge">0</span>
+          <div id="project-form" class="project-form hidden">
+            <input type="text" id="project-name" class="text-input" placeholder="Project name…" maxlength="100">
+            <input type="text" id="project-desc" class="text-input" placeholder="Short description (optional)…" maxlength="200">
+            <div class="project-form-actions">
+              <select id="project-status-select" class="select-input">
+                <option value="tostart">To Start</option>
+                <option value="inprogress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+              <button id="project-save-btn" class="btn btn-primary btn-sm">Save</button>
+              <button id="project-cancel-btn" class="btn btn-ghost btn-sm">Cancel</button>
             </div>
-            <div class="kanban-items" id="tostart-items"></div>
           </div>
-          <div class="kanban-col kanban-col--inprogress" data-status="inprogress">
-            <div class="kanban-col-header">
-              <span class="kanban-col-title">In Progress</span>
-              <span class="badge badge-amber" id="inprogress-badge">0</span>
+          <div class="kanban">
+            <div class="kanban-col kanban-col--tostart" data-status="tostart">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title">To Start</span>
+                <span class="badge badge-cyan" id="tostart-badge">0</span>
+              </div>
+              <div class="kanban-items" id="tostart-items"></div>
             </div>
-            <div class="kanban-items" id="inprogress-items"></div>
-          </div>
-          <div class="kanban-col kanban-col--completed" data-status="completed">
-            <div class="kanban-col-header">
-              <span class="kanban-col-title">Completed</span>
-              <span class="badge badge-jade" id="completed-badge">0</span>
+            <div class="kanban-col kanban-col--inprogress" data-status="inprogress">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title">In Progress</span>
+                <span class="badge badge-amber" id="inprogress-badge">0</span>
+              </div>
+              <div class="kanban-items" id="inprogress-items"></div>
             </div>
-            <div class="kanban-items" id="completed-items"></div>
+            <div class="kanban-col kanban-col--completed" data-status="completed">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title">Completed</span>
+                <span class="badge badge-jade" id="completed-badge">0</span>
+              </div>
+              <div class="kanban-items" id="completed-items"></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Motivation / Floater Editor ─────────────────────── -->
-      <section id="quote-card" class="glass-card reveal">
-        <div class="card-header">
-          <div class="card-header-left">
-            <span class="panel-icon">✨</span>
-            <h2 class="card-title">Motivation</h2>
+        <!-- Motivation / Floater Editor -->
+        <section id="quote-card" class="glass-card reveal">
+          <div class="card-header">
+            <div class="card-header-left">
+              <span class="panel-icon">✨</span>
+              <h2 class="card-title">Motivation</h2>
+            </div>
           </div>
-        </div>
-        <p id="quote-preview" class="quote-preview"></p>
-        <div id="quote-controls" class="quote-controls">
-          <button id="quote-edit-btn" class="btn btn-ghost btn-sm btn-full">Edit Statement</button>
-          <button id="quote-toggle-btn" class="btn btn-ghost btn-sm btn-full">Hide / Show</button>
-        </div>
-        <div id="quote-form" class="quote-form hidden">
-          <textarea id="quote-text" class="textarea-input" rows="3" placeholder="Your motivational statement…" maxlength="300"></textarea>
-          <div class="quote-style-row">
-            <label class="label-sm">Animation</label>
-            <select id="quote-style" class="select-input select-sm">
-              <option value="drift">Drift</option>
-              <option value="pulse">Pulse</option>
-            </select>
+          <p id="quote-preview" class="quote-preview"></p>
+          <div id="quote-controls" class="quote-controls">
+            <button id="quote-edit-btn" class="btn btn-ghost btn-sm btn-full">Edit Statement</button>
+            <button id="quote-toggle-btn" class="btn btn-ghost btn-sm btn-full">Hide / Show</button>
           </div>
-          <div class="quote-form-actions">
-            <button id="quote-save-btn" class="btn btn-primary btn-sm">Save</button>
-            <button id="quote-cancel-btn" class="btn btn-ghost btn-sm">Cancel</button>
+          <div id="quote-form" class="quote-form hidden">
+            <textarea id="quote-text" class="textarea-input" rows="3" placeholder="Your motivational statement…" maxlength="300"></textarea>
+            <div class="quote-style-row">
+              <label class="label-sm">Animation</label>
+              <select id="quote-style" class="select-input select-sm">
+                <option value="drift">Drift</option>
+                <option value="pulse">Pulse</option>
+              </select>
+            </div>
+            <div class="quote-form-actions">
+              <button id="quote-save-btn" class="btn btn-primary btn-sm">Save</button>
+              <button id="quote-cancel-btn" class="btn btn-ghost btn-sm">Cancel</button>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-    </main>
-  </div>
+      </main>
+    </div><!-- /page-home -->
+
+    <!-- ── Page: Learning Path ─────────────────────────────────── -->
+    <div class="page" id="page-learning">
+      <div class="learning-page-layout">
+
+        <!-- Left: Visual path -->
+        <div class="learning-main">
+          <div class="lp-header">
+            <div class="lp-header-top">
+              <h2 class="lp-title">Claude Code Learning Path</h2>
+              <button id="lp-add-btn" class="btn btn-ghost btn-sm">+ Step</button>
+            </div>
+            <div class="lp-progress-bar">
+              <div id="lp-progress-fill" class="lp-progress-fill"></div>
+            </div>
+            <p id="lp-progress-text" class="lp-progress-text">No steps yet</p>
+          </div>
+
+          <div id="lp-add-row" class="task-input-row hidden" style="margin: 0 0 16px 0">
+            <input type="text" id="lp-input" class="text-input" placeholder="New step topic…" maxlength="200">
+            <button id="lp-save-btn" class="btn btn-primary btn-sm">Add</button>
+            <button id="lp-cancel-btn" class="btn btn-ghost btn-sm">✕</button>
+          </div>
+
+          <div id="learning-path-map" class="learning-path-map"></div>
+        </div>
+
+        <!-- Right: AI chat panel -->
+        <aside class="chat-panel glass-card">
+          <div class="chat-panel-header">
+            <div class="card-header-left">
+              <span class="panel-icon">🤖</span>
+              <h3 class="card-title">Claude Code Tutor</h3>
+            </div>
+            <button id="chat-api-key-btn" class="btn btn-ghost btn-icon btn-sm" title="Set API Key">🔑</button>
+          </div>
+
+          <div id="chat-messages" class="chat-messages">
+            <div class="chat-msg chat-msg--assistant">
+              Hi! I'm your Claude Code tutor. I can design a learning curriculum for you and add the steps directly to your path.<br><br>
+              Try asking me to <strong>build your path</strong>, or ask about specific topics.
+            </div>
+          </div>
+
+          <div id="chat-thinking" class="chat-thinking hidden">
+            <span></span><span></span><span></span>
+          </div>
+
+          <div class="chat-footer">
+            <button id="chat-propose-btn" class="btn btn-ghost btn-sm btn-full chat-propose">✨ Propose a full curriculum</button>
+            <div class="chat-input-row">
+              <textarea id="chat-input" class="textarea-input chat-textarea"
+                placeholder="Ask me to design your path… (Ctrl+Enter to send)" rows="2"></textarea>
+              <button id="chat-send-btn" class="btn btn-primary chat-send-btn">Send</button>
+            </div>
+          </div>
+        </aside>
+
+      </div><!-- /learning-page-layout -->
+
+      <!-- API Key overlay -->
+      <div id="api-key-overlay" class="api-key-overlay hidden">
+        <div class="api-key-card glass-card">
+          <h3 class="card-title" style="margin-bottom:8px">Anthropic API Key</h3>
+          <p class="text-2" style="margin-bottom:16px;font-size:0.82rem">
+            Stored securely in your Supabase account — syncs to all your devices.<br>
+            Never shared with anyone except Anthropic's API.
+          </p>
+          <input type="password" id="api-key-input" class="text-input" placeholder="sk-ant-api03-…" style="margin-bottom:12px">
+          <div class="api-key-actions">
+            <button id="api-key-save" class="btn btn-primary btn-sm">Save Key</button>
+            <button id="api-key-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-learning -->
+
+    <!-- Shared milestone popup (fixed, managed by learning-path-page.js) -->
+    <div id="milestone-popup" class="milestone-popup-global glass-card hidden"></div>
+
+  </div><!-- /dashboard -->
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="db.js"></script>
+  <script src="router.js"></script>
   <script src="floater.js"></script>
+  <script src="learning-path-page.js"></script>
+  <script src="chat-agent.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

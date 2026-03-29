@@ -157,9 +157,9 @@ window.DB = {
   // ── Learning Path ─────────────────────────────────────────────
   getLearningItems() { return _readArr('learning') },
 
-  async addLearningItem(topic) {
+  async addLearningItem(topic, status = 'todo') {
     const items = _readArr('learning')
-    const item = { id: genId(), topic, position: items.length, created_at: new Date().toISOString() }
+    const item = { id: genId(), topic, position: items.length, status, created_at: new Date().toISOString() }
     _writeArr('learning', [...items, item])
     if (_user) await _safe(_sb.from('learning_path').insert({ ...item, user_id: _user.id }))
     return item
@@ -172,6 +172,27 @@ window.DB = {
       await _safe(_sb.from('learning_path').delete().eq('id', id))
     }
   },
+
+  async updateLearningStatus(id, status) {
+    _writeArr('learning', _readArr('learning').map(l => l.id === id ? { ...l, status } : l))
+    if (_user) await _safe(_sb.from('learning_path').update({ status }).eq('id', id))
+  },
+
+  async replaceLearningItems(topics) {
+    const items = topics.map((topic, i) => ({
+      id: genId(), topic: String(topic).trim(), position: i, status: 'todo',
+      created_at: new Date().toISOString()
+    }))
+    _writeArr('learning', items)
+    if (_user) {
+      await _safe(_sb.from('learning_path').delete().eq('user_id', _user.id))
+      if (items.length) {
+        await _safe(_sb.from('learning_path').insert(items.map(it => ({ ...it, user_id: _user.id }))))
+      }
+    }
+  },
+
+  async clearLearningItems() { return this.replaceLearningItems([]) },
 
   async moveLearningItem(id, direction) {
     const items = _readArr('learning')
@@ -229,6 +250,16 @@ window.DB = {
     }
   },
 
+  getApiKey() { return localStorage.getItem('pdash_anthropic_key') || '' },
+
+  async saveApiKey(key) {
+    localStorage.setItem('pdash_anthropic_key', key)
+    if (_user) {
+      await _safe(_sb.from('floater_state')
+        .upsert({ user_id: _user.id, anthropic_key: key, updated_at: new Date().toISOString() }, { onConflict: 'user_id' }))
+    }
+  },
+
   // ── Full sync from Supabase (called after login) ───────────────
   async syncAll() {
     if (!_user) return
@@ -251,6 +282,7 @@ window.DB = {
           visible: f.data.visible ?? cur.visible,
           style:   f.data.style   ?? cur.style,
         }))
+        if (f.data.anthropic_key) localStorage.setItem('pdash_anthropic_key', f.data.anthropic_key)
       }
     } catch (e) { console.warn('Sync failed (offline?):', e) }
   },
