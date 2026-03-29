@@ -111,10 +111,13 @@ function setupIdeaDelete() {
   if (!list || list.dataset.deleteWired) return
   list.dataset.deleteWired = '1'
   list.addEventListener('click', e => {
+    console.log('[ideas] click target:', e.target, e.target.className)
     const btn = e.target.closest('.item-delete')
+    console.log('[ideas] btn found:', btn, btn?.dataset?.id)
     if (!btn) return
     const li = btn.closest('.idea-item')
     if (!li) return
+    console.log('[ideas] deleting id:', btn.dataset.id)
     li.classList.add('removing')
     setTimeout(() => {
       DB.deleteIdea(btn.dataset.id)
