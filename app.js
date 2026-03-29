@@ -104,16 +104,22 @@ function renderIdeas() {
   list.innerHTML = items
   if (!ideas.length) list.appendChild(empty)
   else empty.style.display = 'none'
+}
 
-  list.querySelectorAll('.item-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const li = btn.closest('.idea-item')
-      li.classList.add('removing')
-      setTimeout(() => {
-        DB.deleteIdea(btn.dataset.id)
-        renderIdeas()
-      }, 190)
-    })
+function setupIdeaDelete() {
+  const list = $('ideas-list')
+  if (!list || list.dataset.deleteWired) return
+  list.dataset.deleteWired = '1'
+  list.addEventListener('click', e => {
+    const btn = e.target.closest('.item-delete')
+    if (!btn) return
+    const li = btn.closest('.idea-item')
+    if (!li) return
+    li.classList.add('removing')
+    setTimeout(() => {
+      DB.deleteIdea(btn.dataset.id)
+      renderIdeas()
+    }, 190)
   })
 }
 
@@ -385,6 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupLogin()
   setupTaskInput()
   setupIdeaInput()
+  setupIdeaDelete()
   setupLearningPageInput()
   setupProjectForm()
   setupQuoteCard()
