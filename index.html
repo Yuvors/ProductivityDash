@@ -70,6 +70,7 @@
       </div>
       <div class="nav-links">
         <a class="nav-link" data-page="home" href="#home">Home</a>
+        <a class="nav-link" data-page="calendar" href="#calendar">Planner</a>
         <a class="nav-link" data-page="learning" href="#learning">Learning Path</a>
       </div>
       <div class="nav-right">
@@ -82,24 +83,21 @@
     <div class="page" id="page-home">
       <main class="bento-grid">
 
-        <!-- Tomorrow's Tasks -->
+        <!-- Tomorrow's Tasks (preview) -->
         <section id="tasks-card" class="glass-card reveal">
           <div class="card-header">
             <div class="card-header-left">
-              <h2 class="card-title">Tomorrow's Tasks</h2>
+              <h2 class="card-title">Tomorrow</h2>
               <span class="badge badge-accent" id="tasks-badge">0</span>
             </div>
+            <a href="#calendar" class="btn btn-ghost btn-sm">Open Planner →</a>
           </div>
           <div class="task-input-row">
-            <input type="text" id="task-input" class="text-input" placeholder="Add a task for tomorrow…" maxlength="200">
+            <input type="text" id="task-input" class="text-input" placeholder="Quick add task…" maxlength="200">
             <button id="task-add-btn" class="btn btn-primary btn-sm">Add</button>
           </div>
-          <ul id="tasks-list" class="task-list">
-            <li class="empty-state" id="tasks-empty">
-              <span>Nothing planned yet</span>
-              <small>Add your first task above</small>
-            </li>
-          </ul>
+          <div id="tasks-preview-list" class="tasks-preview-list"></div>
+          <p id="tasks-unscheduled-note" class="tasks-unscheduled-note"></p>
         </section>
 
         <!-- Claude Ideas -->
@@ -282,6 +280,106 @@
     <!-- Shared milestone popup (fixed, managed by learning-path-page.js) -->
     <div id="milestone-popup" class="milestone-popup-global glass-card hidden"></div>
 
+    <!-- ── Page: Calendar / Planner ────────────────────────────── -->
+    <div class="page" id="page-calendar">
+      <div class="calendar-page-layout">
+
+        <!-- Left: Calendar grid -->
+        <div class="calendar-main">
+          <div class="cal-header">
+            <h2 class="cal-title">Time Planner</h2>
+            <div class="cal-view-tabs">
+              <button class="cal-tab active" data-view="tomorrow">Tomorrow</button>
+              <button class="cal-tab" data-view="week">This Week</button>
+            </div>
+            <div class="cal-week-nav hidden" id="cal-week-nav">
+              <button id="cal-prev-week" class="btn btn-ghost btn-icon btn-sm">‹</button>
+              <span id="cal-week-label" class="cal-week-label"></span>
+              <button id="cal-next-week" class="btn btn-ghost btn-icon btn-sm">›</button>
+            </div>
+            <button id="cal-add-btn" class="btn btn-primary btn-sm">+ Task</button>
+          </div>
+
+          <!-- Task creation form (slides in below header) -->
+          <div id="cal-task-form" class="cal-task-form glass-card hidden">
+            <input type="text" id="cal-title" class="text-input" placeholder="Task title…" maxlength="200">
+            <input type="text" id="cal-desc" class="text-input" placeholder="Description (optional)…" maxlength="400">
+            <div class="cal-form-row">
+              <div class="color-picker" id="cal-color-picker">
+                <button class="color-swatch swatch-teal active" data-color="teal" title="Work"></button>
+                <button class="color-swatch swatch-cyan"        data-color="cyan"  title="Focus"></button>
+                <button class="color-swatch swatch-amber"       data-color="amber" title="Meeting"></button>
+                <button class="color-swatch swatch-jade"        data-color="jade"  title="Health"></button>
+                <button class="color-swatch swatch-rose"        data-color="rose"  title="Personal"></button>
+              </div>
+              <input type="date" id="cal-sched-date" class="text-input cal-date-input">
+              <input type="time" id="cal-sched-time" class="text-input cal-time-input">
+              <select id="cal-duration" class="select-input cal-dur-input">
+                <option value="30">30 min</option>
+                <option value="60" selected>1 hour</option>
+                <option value="90">1.5 hr</option>
+                <option value="120">2 hours</option>
+                <option value="180">3 hours</option>
+              </select>
+            </div>
+            <div class="cal-form-actions">
+              <button id="cal-form-save" class="btn btn-primary btn-sm">Add Task</button>
+              <button id="cal-form-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Unscheduled task pool -->
+          <div class="task-pool glass-card" id="cal-pool">
+            <div class="pool-header">
+              <span class="pool-title">Unscheduled</span>
+              <span class="badge badge-accent" id="cal-pool-badge">0</span>
+            </div>
+            <div id="cal-pool-items" class="pool-items"></div>
+          </div>
+
+          <!-- Time grid -->
+          <div class="cal-grid-wrapper">
+            <div id="cal-grid" class="cal-grid"></div>
+          </div>
+        </div>
+
+        <!-- Right: AI Schedule Assistant -->
+        <aside class="chat-panel glass-card" id="cal-chat-panel">
+          <div class="chat-panel-header">
+            <div class="card-header-left">
+              <span class="panel-icon">🗓️</span>
+              <h3 class="card-title">Schedule Assistant</h3>
+            </div>
+            <button id="cal-api-key-btn" class="btn btn-ghost btn-icon btn-sm" title="Set API Key">🔑</button>
+          </div>
+
+          <div id="cal-chat-messages" class="chat-messages">
+            <div class="chat-msg chat-msg--assistant">
+              Hi! I can help you plan your day and schedule tasks efficiently.<br><br>
+              Try <strong>"Plan my tomorrow"</strong> or <strong>"Optimize my week"</strong> — I'll look at your tasks and schedule them for peak productivity.
+            </div>
+          </div>
+
+          <div id="cal-chat-thinking" class="chat-thinking hidden">
+            <span></span><span></span><span></span>
+          </div>
+
+          <div class="chat-footer">
+            <div class="chat-quick-btns">
+              <button class="btn btn-ghost btn-sm chat-propose" id="cal-propose-tomorrow">📅 Plan tomorrow</button>
+              <button class="btn btn-ghost btn-sm chat-propose" id="cal-propose-week">🔀 Optimize week</button>
+            </div>
+            <div class="chat-input-row">
+              <textarea id="cal-chat-input" class="textarea-input chat-textarea"
+                placeholder="Ask me to schedule or rearrange tasks… (Ctrl+Enter)" rows="2"></textarea>
+              <button id="cal-chat-send" class="btn btn-primary chat-send-btn">Send</button>
+            </div>
+          </div>
+        </aside>
+
+      </div><!-- /calendar-page-layout -->
+    </div><!-- /page-calendar -->
+
   </div><!-- /dashboard -->
 
   <!-- Scripts -->
@@ -291,6 +389,8 @@
   <script src="floater.js"></script>
   <script src="learning-path-page.js"></script>
   <script src="chat-agent.js"></script>
+  <script src="calendar-page.js"></script>
+  <script src="calendar-agent.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

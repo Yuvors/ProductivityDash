@@ -30,66 +30,57 @@ function setupScrollReveal() {
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
 }
 
-// ── Tasks ────────────────────────────────────────────────────────
-function renderTasks() {
-  const tasks = DB.getTasks()
-  const list  = $('tasks-list')
-  const badge = $('tasks-badge')
-  const empty = $('tasks-empty')
+// ── Tasks Preview (home page) ─────────────────────────────────────
+function _tomorrowStr() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
 
-  const pending = tasks.filter(t => !t.completed).length
-  badge.textContent = pending
+function renderTasksPreview() {
+  const tasks  = DB.getTasks()
+  const tmrw   = _tomorrowStr()
+  const badge  = $('tasks-badge')
+  const list   = $('tasks-preview-list')
+  const note   = $('tasks-unscheduled-note')
+  if (!list) return
 
-  const items = tasks.map(t => `
-    <li class="task-item${t.completed ? ' done' : ''}" data-id="${esc(t.id)}">
-      <button class="task-check" data-id="${esc(t.id)}" aria-label="Toggle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </button>
-      <span class="task-text">${esc(t.title)}</span>
-      <button class="task-delete" data-id="${esc(t.id)}" aria-label="Delete">×</button>
-    </li>
-  `).join('')
+  const scheduled   = tasks.filter(t => t.scheduled_date === tmrw && !t.completed)
+    .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
+  const unscheduled = tasks.filter(t => !t.scheduled_date && !t.completed)
 
-  // Replace all except the empty-state li (keep it in DOM, toggle visibility)
-  list.innerHTML = items
-  if (!tasks.length) list.appendChild(empty)
-  else empty.style.display = 'none'
+  badge.textContent = unscheduled.length
 
-  // Events
-  list.querySelectorAll('.task-check').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const task = DB.getTasks().find(t => t.id === btn.dataset.id)
-      if (!task) return
-      DB.updateTask(btn.dataset.id, { completed: !task.completed })
-      renderTasks()
-    })
-  })
+  const colorMap = { teal: '#00C9A7', cyan: '#00B4D8', amber: '#FFB347', jade: '#00D4AA', rose: '#FF6B8A' }
 
-  list.querySelectorAll('.task-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const li = btn.closest('.task-item')
-      li.classList.add('removing')
-      setTimeout(() => {
-        DB.deleteTask(btn.dataset.id)
-        renderTasks()
-      }, 190)
-    })
-  })
+  list.innerHTML = scheduled.slice(0, 4).map(t => `
+    <div class="preview-block">
+      <span class="preview-dot" style="background:${colorMap[t.color] || colorMap.teal}"></span>
+      <span class="preview-time">${t.start_time || ''}</span>
+      <span class="preview-title">${esc(t.title)}</span>
+    </div>
+  `).join('') || (scheduled.length === 0 && unscheduled.length === 0
+    ? '<p class="tasks-unscheduled-note" style="margin:0">Nothing planned yet</p>' : '')
+
+  if (note) {
+    note.textContent = unscheduled.length
+      ? `${unscheduled.length} unscheduled task${unscheduled.length > 1 ? 's' : ''} — open planner to schedule`
+      : (scheduled.length > 4 ? `+${scheduled.length - 4} more scheduled` : '')
+  }
 }
 
 function setupTaskInput() {
-  const input = $('task-input')
+  const input  = $('task-input')
   const addBtn = $('task-add-btn')
+  if (!input) return
 
   function add() {
     const val = input.value.trim()
     if (!val) return
     input.value = ''
     DB.addTask(val)
-    renderTasks()
+    renderTasksPreview()
+    window.renderCalendar?.()
   }
 
   addBtn.addEventListener('click', add)
@@ -352,7 +343,7 @@ async function showDashboard() {
   await DB.syncAll()
 
   // Render home page sections
-  renderTasks()
+  renderTasksPreview()
   renderIdeas()
   renderProjects()
   renderQuoteCard()
@@ -362,7 +353,7 @@ async function showDashboard() {
 
   // Subscribe to realtime
   DB.subscribeAll({
-    onTasksChange:    renderTasks,
+    onTasksChange:    () => { renderTasksPreview(); window.renderCalendar?.() },
     onIdeasChange:    renderIdeas,
     onLearningChange: () => window.renderLearningPath?.(),
     onProjectsChange: renderProjects,
@@ -377,6 +368,7 @@ async function showDashboard() {
   // Page activation handler
   window._onPageActivate = pageId => {
     if (pageId === 'learning') window.renderLearningPath?.()
+    if (pageId === 'calendar') window.renderCalendar?.()
   }
 
   // Start router (renders initial page, calls _onPageActivate)
@@ -397,6 +389,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupProjectForm()
   setupQuoteCard()
   ChatAgent.init()
+  setupCalendarPage()
+  CalendarAgent.init()
 
   window.onAuthChange = user => {
     if (user) showDashboard()

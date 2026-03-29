@@ -1,6 +1,6 @@
 // ── Hash-based SPA router ────────────────────────────────────────
 window.Router = (() => {
-  const PAGES   = ['home', 'learning']
+  const PAGES   = ['home', 'learning', 'calendar']
   const DEFAULT = 'home'
 
   function _getHash() {

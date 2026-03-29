@@ -122,8 +122,12 @@ window.DB = {
   // ── Tasks ─────────────────────────────────────────────────────
   getTasks() { return _readArr('tasks') },
 
-  async addTask(title) {
-    const item = { id: genId(), title, completed: false, created_at: new Date().toISOString() }
+  async addTask(title, description = null, color = 'teal') {
+    const item = {
+      id: genId(), title, description, color, completed: false,
+      scheduled_date: null, start_time: null, duration_minutes: 60,
+      created_at: new Date().toISOString()
+    }
     _writeArr('tasks', [item, ..._readArr('tasks')])
     if (_user) await _safe(_sb.from('tasks').insert({ ...item, user_id: _user.id }))
     return item
@@ -132,6 +136,15 @@ window.DB = {
   async updateTask(id, changes) {
     _writeArr('tasks', _readArr('tasks').map(t => t.id === id ? { ...t, ...changes } : t))
     if (_user) await _safe(_sb.from('tasks').update(changes).eq('id', id))
+  },
+
+  async scheduleTask(id, sched) {
+    _writeArr('tasks', _readArr('tasks').map(t => t.id === id ? { ...t, ...sched } : t))
+    if (_user) await _safe(_sb.from('tasks').update(sched).eq('id', id))
+  },
+
+  async unscheduleTask(id) {
+    return this.scheduleTask(id, { scheduled_date: null, start_time: null })
   },
 
   async deleteTask(id) {
