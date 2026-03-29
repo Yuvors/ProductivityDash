@@ -748,6 +748,12 @@ a { color: inherit; text-decoration: none; }
 
 .quote-form { display: flex; flex-direction: column; gap: 10px; }
 
+#quote-text {
+  direction: rtl;
+  unicode-bidi: embed;
+  text-align: right;
+}
+
 .quote-style-row {
   display: flex;
   align-items: center;
@@ -840,6 +846,8 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 560px;
+  direction: rtl;
+  unicode-bidi: embed;
 }
 
 .floater__close {
